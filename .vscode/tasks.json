@@ -1,0 +1,17 @@
+{
+    "label": "setup venv and run",
+    "type": "shell",
+    "command": "powershell",
+    "args": [
+      "-Command",
+      "if (!(Test-Path venv)) { python -m venv venv }; .\\venv\\Scripts\\Activate.ps1; pip install -r requirements.txt; python -m sims.main"
+    ],
+    "presentation": {
+      "echo": true,
+      "reveal": "always",
+      "focus": false,
+      "panel": "shared"
+    },
+    "problemMatcher": []
+  }
+  
