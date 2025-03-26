@@ -9,8 +9,8 @@ def solve(grid : list[list[int]]) -> list[list[int]]:
 
     for y in range(h):
         for x in range(w):
-            if grid[y][x] == Tile.ROAD:
-                s.add(s_grid[y][x] == Tile.ROAD)
+            if grid[y][x] == Tile.ROAD or grid[y][x] == Tile.WATER:
+                s.add(s_grid[y][x] == grid[y][x])
             else:
                 s.add(Or(s_grid[y][x] == Tile.NONE, s_grid[y][x] == Tile.BUILDING))
 
@@ -19,7 +19,7 @@ def solve(grid : list[list[int]]) -> list[list[int]]:
 
     for y in range(h):
         for x in range(w):
-            if grid[y][x] != Tile.ROAD:
+            if grid[y][x] != Tile.ROAD and grid[y][x] != Tile.WATER:
                 neighbors = []
                 for dy, dx in [(-1,0), (1,0), (0,-1), (0,1)]:
                     ny, nx = y + dy, x + dx
