@@ -1,11 +1,14 @@
 from noise import pnoise2
 from sims.utils import Tile
+from sims.options import Opt, get
 import random
 
 TRESH = 0.97
 SCALE = 50
 
-def generate_river(grid : list[list[int]], grid_width : int, grid_height : int) -> list[list[int]]:
+def generate_river(grid : list[list[int]]) -> list[list[int]]:
+    grid_width, grid_height = get(Opt.GRID_WIDTH), get(Opt.GRID_HEIGHT)
+    
     seed = random.randint(0, 1000)
 
     # Génération du bruit Perlin et transformation en ridge noise

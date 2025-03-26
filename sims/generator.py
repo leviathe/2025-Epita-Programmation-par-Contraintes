@@ -2,14 +2,10 @@ from typing import Callable, List
 import sims.z3_solver as z3_solver
 import eel
 
+from sims.options import Opt, get
 from sims.river_rg import generate_river
 
-GRID_WIDTH = 50
-GRID_HEIGHT = 50
-
 ROAD_GENERATION_ALGORITHMS = {}
-
-SELECTED_ROAD_GENERATION_ALGORITHM = None
 
 """
 Function to register road generation algorithms.
@@ -34,12 +30,10 @@ def select_rg(algo_name):
 
 @eel.expose
 def generate():
-    grid =  ROAD_GENERATION_ALGORITHMS[SELECTED_ROAD_GENERATION_ALGORITHM](GRID_WIDTH, GRID_HEIGHT)
-    grid = generate_river(grid, GRID_WIDTH, GRID_HEIGHT)
-    grid = z3_solver.solve(grid)
-    return grid
+    generated = ROAD_GENERATION_ALGORITHMS[get(Opt.ROAD_GENERATION_ALGORITHM)]()
+    
+    if get(Opt.GENERATE_RIVERS):
+        generated = generate_river(generated)
 
-def sync_rg_to_front():
-    algorithms = list(ROAD_GENERATION_ALGORITHMS.keys())
-    print(f'Syncing rg algorithms to front: {algorithms}.')
-    eel.registerRoadGenerationAlgorithms(algorithms)
+    # grid = z3_solver.solve(grid)
+    return generated

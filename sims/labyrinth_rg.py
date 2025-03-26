@@ -2,8 +2,11 @@ import random
 
 from sims.utils import Tile
 import sims.generator as generator
+from sims.options import Opt, get
 
-def generate_labyrinth_roads(grid_width : int, grid_height : int) -> list[list[int]]: 
+def generate_labyrinth_roads() -> list[list[int]]: 
+    grid_width, grid_height = get(Opt.GRID_WIDTH), get(Opt.GRID_HEIGHT)
+
     grid = [[Tile.NONE for _ in range(grid_width)] for _ in range(grid_height)]
 
     start_x, start_y = 1, 1

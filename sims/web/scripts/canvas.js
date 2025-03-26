@@ -1,10 +1,9 @@
-const loadCanvasButton = document.getElementById('load_canvas')
 const pixiContainer = document.getElementById('pixi_container')
 const rgSelect = document.getElementById('rg-select')
-let app = new PIXI.Application()
+let app = null
+let container = null
 
 eel.expose(LoadCanvas)
-eel.expose(registerRoadGenerationAlgorithms)
 CANVAS_LOADED = false
 
 // Enum for Tile type
@@ -26,7 +25,11 @@ let TileTexture = {
 async function LoadTextures() {
     for (const [key,value] of Object.entries(TileTexture)) {
         let tl = []
-        for (const t of value) { tl.push(await PIXI.Assets.load(`/images/${t}.png`)); }
+        for (const t of value) { 
+            let te = await PIXI.Assets.load(`/images/${t}.png`)
+            te.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
+            tl.push(te); 
+        }
         TileTexture[key] = tl
     }
 }
@@ -35,12 +38,91 @@ function GetTexture(type) {
     return TileTexture[type][Math.floor(Math.random() * TileTexture[type].length)];
 }
 
+async function CreateApp(width, height) {
+    app = new PIXI.Application()
+
+    await app.init({
+        width: width * 16,
+        height: height * 16,
+        backgroundColor: 0xbbbbbb,
+        antialias: false
+    });
+
+    // ------------- ZOOMING ---------------
+
+    container = app.stage
+
+    let s_factor = 1; // current scale
+    const min_scale = 0.5; // min zoom
+    const max_scale = 10;  // max zoom
+    const z_factor = 1.1; 
+
+    app.view.addEventListener('wheel', (e) => {
+        e.preventDefault(); // not propagating
+      
+        const dir = e.deltaY > 0 ? 1 : -1;
+        const scale_change = dir > 0 ? 1 / z_factor : z_factor; // scale change
+      
+        const pointer = app.renderer.events.pointer;
+        const mpos = pointer.global;
+      
+        const wpos = {
+          x: (mpos.x - container.x) / container.scale.x,
+          y: (mpos.y - container.y) / container.scale.y,
+        };
+      
+        s_factor *= scale_change;
+        s_factor = Math.max(min_scale, Math.min(max_scale, s_factor)); 
+        container.scale.set(s_factor);
+
+        const spos = {
+          x: wpos.x * s_factor + container.x,
+          y: wpos.y * s_factor + container.y,
+        };
+      
+        container.x -= (spos.x - mpos.x);
+        container.y -= (spos.y - mpos.y);
+    }, { passive: false });
+
+    // ------------- /ZOOMING ---------------
+
+    // ------------- DRAGGING ---------------
+
+    let dragging = false;
+    let drag_start = { x: 0, y: 0 };
+    let container_start = { x: 0, y: 0 };
+
+    app.canvas.addEventListener('mousedown', (e) => {
+        dragging = true;
+        drag_start.x = e.clientX;
+        drag_start.y = e.clientY;
+        container_start.x = container.x;
+        container_start.y = container.y;
+    });
+
+    app.canvas.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+
+        const dx = e.clientX - drag_start.x;
+        const dy = e.clientY - drag_start.y;
+
+        container.x = container_start.x + dx;
+        container.y = container_start.y + dy;
+    });
+
+    app.canvas.addEventListener('mouseup', () => { dragging = false; });
+    app.canvas.addEventListener('mouseleave', () => { dragging = false; });
+
+    // ------------- /DRAGGING ---------------
+}
+
 async function DestroyCanvas() {
     if (!CANVAS_LOADED)
         return
 
     app.destroy(true, { children: true, texture: true, baseTexture: true });
-    app = new PIXI.Application()
+    
+    await CreateApp()
 
     pixiContainer.classList.remove('show')
     pixiContainer.classList.add('hide')
@@ -51,11 +133,7 @@ async function DestroyCanvas() {
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
 async function LoadCanvas(grid) {
-    await app.init({
-        width: grid[0].length * 16,
-        height: grid.length * 16,
-        backgroundColor: 0xbbbbbb
-    });
+    await CreateApp(grid[0].length, grid.length)
 
     CANVAS_LOADED = true
 
@@ -75,7 +153,6 @@ async function LoadCanvas(grid) {
 
     const sprites = []
 
-    // Loading sprites
     for (let y = 0; y < grid.length; y++) {
         for (let x = 0; x < grid[y].length; x++) {
             const sprite = new PIXI.Sprite(GetTexture(grid[y][x]));
@@ -95,14 +172,19 @@ async function LoadCanvas(grid) {
     for (const sprite of sprites) {
         app.stage.addChild(sprite)
     
-        if (i % 5 == 0)
+        if (i % 15 == 0)
             await delay(1)
 
         i += 1;
     }
 }
 
-loadCanvasButton.onclick = async () => {
+window.addEventListener('keydown', async (event) => {
+    if (event.code !== 'Space')
+        return
+
+    event.preventDefault()
+
     if (CANVAS_LOADED)
         await DestroyCanvas()
 
@@ -111,25 +193,6 @@ loadCanvasButton.onclick = async () => {
     console.log('result', grid)
 
     await LoadCanvas(grid)
-}
-
-rgSelect.onchange = async () => {
-    eel.select_rg(this.value)
-}
-
-function registerRoadGenerationAlgorithms(algorithms) {
-    if (algorithms.length === 0)
-        return
-    
-    for (let algo of algorithms) {
-        let o = document.createElement('option')
-        o.value = algo
-        o.text = algo
-
-        rgSelect.appendChild(o)
-    }
-
-    eel.select_rg(algorithms[0])
-}
+})
 
 LoadTextures()
