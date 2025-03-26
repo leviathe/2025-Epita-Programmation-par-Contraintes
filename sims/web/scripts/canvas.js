@@ -10,13 +10,15 @@ CANVAS_LOADED = false
 // Enum for Tile type
 let Tile = {
     0: 'NONE',
-    1: 'ROAD'
+    1: 'ROAD',
+    2: 'WATER',
 }
 
 // Enum for Tile texture
 let TileTexture = {
     0: ['none0', 'none1', 'none2', 'none3', 'none4'],
-    1: ['road']
+    1: ['road'],
+    2: ['water', 'water0', 'water1']
 }
 
 async function LoadTextures() {
