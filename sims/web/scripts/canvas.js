@@ -1,22 +1,30 @@
 const loadCanvasButton = document.getElementById('load_canvas')
 const pixiContainer = document.getElementById('pixi_container')
+const rgSelect = document.getElementById('rg-select')
 let app = new PIXI.Application()
 
 eel.expose(LoadCanvas)
+eel.expose(registerRoadGenerationAlgorithms)
 CANVAS_LOADED = false
 
+// Enum for Tile type
 let Tile = {
     0: 'NONE',
     1: 'ROAD'
 }
 
 // Enum for Tile texture
-let TileTexture = {}
+let TileTexture = {
+    0: ['none0', 'none1', 'none2', 'none3', 'none4'],
+    1: ['road']
+}
 
 async function LoadTextures() {
-    TileTexture[0] = []
-    for (const t of ['none0', 'none1', 'none2', 'none3', 'none4']) { TileTexture[0].push(await PIXI.Assets.load(`/images/${t}.png`)); }
-    TileTexture[1] = [await PIXI.Assets.load('/images/road.png')]
+    for (const [key,value] of Object.entries(TileTexture)) {
+        let tl = []
+        for (const t of value) { tl.push(await PIXI.Assets.load(`/images/${t}.png`)); }
+        TileTexture[key] = tl
+    }
 }
 
 function GetTexture(type) {
@@ -99,6 +107,25 @@ loadCanvasButton.onclick = async () => {
     console.log('result', grid)
 
     await LoadCanvas(grid)
+}
+
+rgSelect.onchange = async () => {
+    eel.select_rg(this.value)
+}
+
+function registerRoadGenerationAlgorithms(algorithms) {
+    if (algorithms.length === 0)
+        return
+    
+    for (let algo of algorithms) {
+        let o = document.createElement('option')
+        o.value = algo
+        o.text = algo
+
+        rgSelect.appendChild(o)
+    }
+
+    eel.select_rg(algorithms[0])
 }
 
 LoadTextures()
