@@ -1,4 +1,5 @@
 from typing import Callable, List
+import sims.z3_solver as z3_solver
 import eel
 
 GRID_WIDTH = 50
@@ -31,7 +32,9 @@ def select_rg(algo_name):
 
 @eel.expose
 def generate():
-    return ROAD_GENERATION_ALGORITHMS[SELECTED_ROAD_GENERATION_ALGORITHM](GRID_WIDTH, GRID_HEIGHT)
+    grid =  ROAD_GENERATION_ALGORITHMS[SELECTED_ROAD_GENERATION_ALGORITHM](GRID_WIDTH, GRID_HEIGHT)
+    grid = z3_solver.solve(grid)
+    return grid
 
 def sync_rg_to_front():
     algorithms = list(ROAD_GENERATION_ALGORITHMS.keys())

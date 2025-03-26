@@ -4,7 +4,7 @@ from sims.utils import Tile
 import sims.generator as generator
 
 def generate_labyrinth_roads(grid_width : int, grid_height : int) -> list[list[int]]: 
-    grid = [[0 for _ in range(grid_width)] for _ in range(grid_height)]
+    grid = [[Tile.NONE for _ in range(grid_width)] for _ in range(grid_height)]
 
     start_x, start_y = 1, 1
     grid[start_y][start_x] = Tile.ROAD
