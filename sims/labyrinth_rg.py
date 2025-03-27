@@ -40,4 +40,4 @@ def generate_labyrinth_roads() -> list[list[int]]:
                             walls.append((new_wx, new_wy))
     return grid
 
-generator.register_road_generation_func('Labyrinth', generate_labyrinth_roads)
+generator.register_road_generation_func('LABYRINTH', generate_labyrinth_roads)

@@ -1,6 +1,7 @@
 import eel
 import sims.generator as generator
-from enum import Enum
+
+from sims.utils import StringEnum
 
 OPTIONS = {}
 
@@ -41,27 +42,49 @@ def register_option(option : Option):
         raise Exception(f'Option already exists: {option.id}.')
     
     OPTIONS[option.id] = option
-
-class StringEnum(str, Enum):
-    def __str__(self):
-        return self.value
     
 class Opt(StringEnum):
+    #Grid
+    
     GRID_WIDTH = 'grid_width'
     GRID_HEIGHT = 'grid_height'
+    
+    # World Generation
     ROAD_GENERATION_ALGORITHM = 'road_generation_algorithm'
-    GENERATE_RIVERS = 'generate_rivers'
+    GENERATE_RIVERS = 'generate_rivers'    
+
+    # City parameters
+    POPULATION = 'population'
+    HOUSE_CAPACITY = 'house_capacity'
+
+    # Solver and Constraints
+    SOLVER = 'solver'
+
+    BUILDINGS_NEXT_TO_AT_LEAST_A_ROAD = 'buildings_next_to_at_least_a_road'
+    
 
 class OptCat(StringEnum):
     GRID = 'GRID',
     WORLD_GENERATION = 'WORLD GENERATION'
+    SOLVER_AND_CONSTRAINTS = 'SOLVER AND CONSTRAINTS'
+    CITY_PARAMETERS = 'CITY PARAMETERS'
 
 def register_options():
     opts = [
+        # Grid
         RangeOption(Opt.GRID_WIDTH, 'Grid Width', OptCat.GRID, 10, 100, 10),
         RangeOption(Opt.GRID_HEIGHT, 'Grid Height', OptCat.GRID, 10, 100, 10),
+        
+        # World Generation 
         SelectOption(Opt.ROAD_GENERATION_ALGORITHM, 'Road Generation Algorithm', OptCat.WORLD_GENERATION, list(generator.ROAD_GENERATION_ALGORITHMS.keys())),
-        CheckboxOption(Opt.GENERATE_RIVERS, 'Generate Rivers', OptCat.WORLD_GENERATION)
+        CheckboxOption(Opt.GENERATE_RIVERS, 'Generate Rivers', OptCat.WORLD_GENERATION),
+
+        # City Parameters
+        RangeOption(Opt.POPULATION, 'Population', OptCat.CITY_PARAMETERS, 10, 1000, 10),
+        RangeOption(Opt.HOUSE_CAPACITY, 'House Capacity', OptCat.CITY_PARAMETERS, 1, 10, 1),
+
+        # Solver and Constraints
+        SelectOption(Opt.SOLVER, 'Solver', OptCat.SOLVER_AND_CONSTRAINTS, ['NONE'] + list(generator.SOLVER_ALGORITHMS.keys())),
     ]
 
     for o in opts: register_option(o)
