@@ -8,7 +8,7 @@ CONSTRAINTS = {}
 class Constraint():
     def __init__(self, opt : o.Opt, title : str):
         self.opt = opt
-        self.option = o.CheckboxOption(opt, title, o.OptCat.SOLVER_AND_CONSTRAINTS)
+        self.option = o.CheckboxOption(opt, title, o.OptCat.SOLVER_AND_CONSTRAINTS, None)
 
         o.register_option(self.option)
 
@@ -41,4 +41,4 @@ def get_required_number_of_hospitals():
     return math.ceil(o.get(o.Opt.POPULATION) / o.get(o.Opt.HOSPITAL_CAPACITY))
 
 def get_number_of_houses_required_near_hospital():
-    return math.ceil(o.get(o.Opt.HOSPITAL_CAPACITY) / o.get(o.Opt.HOUSE_CAPACITY))
+    return math.floor(o.get(o.Opt.HOSPITAL_CAPACITY) / o.get(o.Opt.HOUSE_CAPACITY))

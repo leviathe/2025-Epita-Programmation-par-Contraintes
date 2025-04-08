@@ -18,6 +18,7 @@ constraints.register_constraints()
 @eel.expose
 def front_load():
     print('Loading front.')
+    eel.step("Hi there 👋!")
     options.send_options_to_front()
 
 print('Starting server...')

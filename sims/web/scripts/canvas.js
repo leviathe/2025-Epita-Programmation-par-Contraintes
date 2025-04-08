@@ -23,7 +23,7 @@ let TileTexture = {
     2: ['water', 'water0', 'water1'],
     3: ['house'],
     4: ['hospital'],
-    5: ['dam']
+    // 5: ['dam']
 }
 
 async function LoadTextures() {
@@ -46,8 +46,8 @@ async function CreateApp(width, height) {
     app = new PIXI.Application()
 
     await app.init({
-        width: width * 16,
-        height: height * 16,
+        width: width * 32,
+        height: height * 32,
         backgroundColor: 0xbbbbbb,
         antialias: false
     });
@@ -56,7 +56,8 @@ async function CreateApp(width, height) {
 
     container = app.stage
 
-    let s_factor = 1; // current scale
+    let s_factor = 2; // current scale
+    container.scale.set(s_factor)
     const min_scale = 0.5; // min zoom
     const max_scale = 10;  // max zoom
     const z_factor = 1.1; 

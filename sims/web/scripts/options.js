@@ -8,8 +8,12 @@ eel.expose(registerOptions)
 
 function registerOptions(options) {
     for (let opt of options) {
-        console.log(opt)
         let category = document.getElementById(`category-${opt.category}`)
+
+        let defaultValue = localStorage.getItem(opt.name)
+        
+        if (defaultValue === null)
+            defaultValue = opt.default 
 
         if (category === null)
         {
@@ -35,9 +39,12 @@ function registerOptions(options) {
             function rangeUpdate() {
                 oName.innerText = `${opt.name} : ${oRange.value}`
                 eel.option_update(opt.id, parseInt(oRange.value))
+                localStorage.setItem(opt.name, oRange.value)
             }
 
             oRange.onchange = rangeUpdate
+
+            if (defaultValue !== null) oRange.value = defaultValue
 
             o.classList.remove('template')
             category.appendChild(o)
@@ -50,8 +57,13 @@ function registerOptions(options) {
             let oName = o.querySelector('.option-checkbox-name')
             oName.innerText = `${opt.name}`
 
-            function checkUpdate() { eel.option_update(opt.id, oCheck.checked) }
+            function checkUpdate() {
+                eel.option_update(opt.id, oCheck.checked)
+                localStorage.setItem(opt.name, oCheck.value)
+            }
             oCheck.onchange = checkUpdate
+
+            if (defaultValue === true) oCheck.checked = true
 
             o.classList.remove('template')
             category.appendChild(o)
@@ -72,10 +84,15 @@ function registerOptions(options) {
                 oSelect.appendChild(dom_o)
             }
 
+            function selectUpdate() {
+                eel.option_update(opt.id, oSelect.value)
+                localStorage.setItem(opt.name, oSelect.value)
+            }
+            oSelect.onchange = selectUpdate
+
             oSelect.value = opt.options[0]
 
-            function selectUpdate() { eel.option_update(opt.id, oSelect.value) }
-            oSelect.onchange = selectUpdate
+            if (defaultValue !== null) oSelect.value = defaultValue
 
             o.classList.remove('template')
             category.appendChild(o)
