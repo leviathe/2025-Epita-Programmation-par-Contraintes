@@ -6,6 +6,7 @@ eel.init(folder / 'web', allowed_extensions=['.js', '.html'])
 
 # Modules imports
 import sims.labyrinth_rg
+import sims.lsystem_rg
 import sims.z3_solver
 import sims.generator as generator
 import sims.options as options

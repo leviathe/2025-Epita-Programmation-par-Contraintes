@@ -56,11 +56,13 @@ class Opt(StringEnum):
     # City parameters
     POPULATION = 'population'
     HOUSE_CAPACITY = 'house_capacity'
+    HOSPITAL_CAPACITY = 'hopital_capacity'
 
     # Solver and Constraints
     SOLVER = 'solver'
 
     BUILDINGS_NEXT_TO_AT_LEAST_A_ROAD = 'buildings_next_to_at_least_a_road'
+    HOSPITALS_NEAR_PATIENTS = 'hospitals_near_patients'
     
 
 class OptCat(StringEnum):
@@ -82,6 +84,7 @@ def register_options():
         # City Parameters
         RangeOption(Opt.POPULATION, 'Population', OptCat.CITY_PARAMETERS, 10, 1000, 10),
         RangeOption(Opt.HOUSE_CAPACITY, 'House Capacity', OptCat.CITY_PARAMETERS, 1, 10, 1),
+        RangeOption(Opt.HOSPITAL_CAPACITY, 'Hospital Capacity', OptCat.CITY_PARAMETERS, 1, 100, 5),
 
         # Solver and Constraints
         SelectOption(Opt.SOLVER, 'Solver', OptCat.SOLVER_AND_CONSTRAINTS, ['NONE'] + list(generator.SOLVER_ALGORITHMS.keys())),
