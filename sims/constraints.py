@@ -27,7 +27,11 @@ def register_constraint(constraint : Constraint):
 def register_constraints():
     consts = [
         Constraint(o.Opt.BUILDINGS_NEXT_TO_AT_LEAST_A_ROAD, 'Buildings next to a road'),
-        Constraint(o.Opt.HOSPITALS_NEAR_PATIENTS, 'Hospitals near patients')
+        Constraint(o.Opt.HARBOURS_ENABLED, 'City has harbours'),
+        Constraint(o.Opt.HOSPITALS_ENABLED, 'City has hospitals'),
+        Constraint(o.Opt.SUPERMARKETS_ENABLED, 'City has supermarkets'),
+        Constraint(o.Opt.HOSPITALS_NEAR_PATIENTS, 'Hospitals near patients'),
+        Constraint(o.Opt.SUPERMARKETS_ALIGNED_WITH_CLIENTS, 'Supermarkets aligned with clients'),
     ]
 
     for c in consts: register_constraint(c)
@@ -42,3 +46,9 @@ def get_required_number_of_hospitals():
 
 def get_number_of_houses_required_near_hospital():
     return math.floor(o.get(o.Opt.HOSPITAL_CAPACITY) / o.get(o.Opt.HOUSE_CAPACITY))
+
+def get_required_number_of_supermarkets():
+    return math.ceil(o.get(o.Opt.POPULATION) / 100)
+
+def get_required_number_of_harbours():
+    return o.get(o.Opt.NUMBER_OF_HARBOURS)

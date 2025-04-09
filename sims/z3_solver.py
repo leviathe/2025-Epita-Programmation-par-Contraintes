@@ -3,8 +3,8 @@ import itertools
 from typing import Tuple
 
 from sims.utils import Tile
-from sims.options import Opt
-from sims.constraints import constraint_enabled, get_required_number_of_houses, get_required_number_of_hospitals, get_number_of_houses_required_near_hospital
+from sims.options import Opt, get
+from sims.constraints import constraint_enabled, get_required_number_of_houses, get_required_number_of_hospitals, get_number_of_houses_required_near_hospital, get_required_number_of_harbours, get_required_number_of_supermarkets
 
 import sims.generator as generator    
 
@@ -23,19 +23,37 @@ def get_neighbors_tiles(grid: list[list[int]], x, y, w, h):
 def has_neighboring_tile(grid: list[list[int]], x, y, tile : Tile, w, h):
     return tile in get_neighbors_tiles(grid, x, y, w, h) 
 
-def get_non_fixed_positions(grid : list[list[int]], w, h, fixed_tiles : list[Tile]):
-    non_fixed = []
+def get_positions_of_type(grid : list[list[int]], w, h, of_type : list[Tile]):
+    pos = []
     for y, x in itertools.product(range(h), range(w)):
-        if not grid[y][x] in fixed_tiles:
-            non_fixed.append((x, y))
-    return non_fixed
+        if grid[y][x] in of_type:
+            pos.append((x, y))
+    return pos
+
+def get_positions_not_type(grid : list[list[int]], w, h, not_type : list[Tile]):
+    pos = []
+    for y, x in itertools.product(range(h), range(w)):
+        if not grid[y][x] in not_type:
+            pos.append((x, y))
+    return pos
+
+def get_non_fixed_positions(grid : list[list[int]], w, h, fixed_tiles : list[Tile]):
+    return get_positions_not_type(grid, w, h, fixed_tiles)
+
+def get_positions_next_to_road_in_pos(grid : list[list[int]], w, h, pos):
+    next_to_road = []
+    for x, y in pos:
+        if has_neighboring_tile(grid, x, y, Tile.ROAD, w, h): next_to_road.append((x, y))
+    return next_to_road
 
 def get_non_fixed_positions_next_to_roads(grid : list[list[int]], w, h, non_fixed):
-    next_to_road = []
-    for x, y in non_fixed:
-        if has_neighboring_tile(grid, x, y, Tile.ROAD, w, h):
-            next_to_road.append((x, y))
-    return next_to_road
+    return get_positions_next_to_road_in_pos(grid, w, h, non_fixed)
+
+def get_water_positions(grid : list[list[int]], w, h):
+    return get_positions_of_type(grid, w, h, [Tile.WATER])
+
+def get_water_positions_next_to_road(grid : list[list[int]], w, h, water_pos):
+    return get_positions_next_to_road_in_pos(grid, w, h, water_pos)
 
 def solve(grid : list[list[int]]) -> Tuple[bool, list[list[int]]]:
     w, h = len(grid[0]), len(grid)
@@ -45,81 +63,97 @@ def solve(grid : list[list[int]]) -> Tuple[bool, list[list[int]]]:
     s = Solver()
 
     fixed_tiles = [ Tile.ROAD, Tile.WATER ]
-    buildings_tiles = [ Tile.HOUSE, Tile.HOSPITAL ]
-    possible_tiles = [ Tile.NONE ] + buildings_tiles
-    all_tiles = possible_tiles + fixed_tiles
+    buildings_tiles = [ Tile.HOUSE ]
+    if constraint_enabled(Opt.HOSPITALS_ENABLED): buildings_tiles += [Tile.HOSPITAL]
+    if constraint_enabled(Opt.SUPERMARKETS_ENABLED): buildings_tiles += [Tile.SUPERMARKET]
+    water_buildings_tiles = [ Tile.HARBOUR ] if constraint_enabled(Opt.HARBOURS_ENABLED) else []
+    possible_earth_tiles = [ Tile.NONE ] + buildings_tiles
+    possible_water_tiles = [Tile.WATER] + water_buildings_tiles
 
     non_fixed = get_non_fixed_positions(grid, w, h, fixed_tiles)
     next_to_road = get_non_fixed_positions_next_to_roads(grid, w, h, non_fixed)
+    water = get_water_positions(grid, w, h)
+    water_next_to_road = get_water_positions_next_to_road(grid, w, h, water)
 
     def get_possible_pos():
-        if Opt.BUILDINGS_NEXT_TO_AT_LEAST_A_ROAD:
-            return next_to_road
-        else:
-            return non_fixed
+        if constraint_enabled(Opt.BUILDINGS_NEXT_TO_AT_LEAST_A_ROAD): return next_to_road
+        else: return non_fixed
+        
+    def get_possible_water_pos():
+        if constraint_enabled(Opt.BUILDINGS_NEXT_TO_AT_LEAST_A_ROAD): return water_next_to_road
+        else: return water
 
     print(get_possible_pos())
 
     # this basically says which tile can be what in the grid
     for y, x in itertools.product(range(h), range(w)):
-        if not (x,y) in get_possible_pos():
-            s.add(s_grid[y][x] == BitVecVal(grid[y][x], 3))
+        if (x,y) in get_possible_pos():
+            s.add(Or([s_grid[y][x] == BitVecVal(dt, 3) for dt in possible_earth_tiles]))
+        elif (x,y) in get_possible_water_pos():
+            s.add(Or([s_grid[y][x] == BitVecVal(dt, 3) for dt in possible_water_tiles]))
         else:
-            s.add(Or([s_grid[y][x] == BitVecVal(dt, 3) for dt in possible_tiles]))
+            s.add(s_grid[y][x] == BitVecVal(grid[y][x], 3))
 
-    nb_houses = get_required_number_of_houses()
-    nb_hospitals = get_required_number_of_hospitals()
+    nb_buildings = [
+        (True, Tile.HOUSE, get_required_number_of_houses()),
+        (constraint_enabled(Opt.HOSPITALS_ENABLED), Tile.HOSPITAL, get_required_number_of_hospitals()),
+        (constraint_enabled(Opt.HARBOURS_ENABLED), Tile.HARBOUR, get_required_number_of_harbours()),
+        (constraint_enabled(Opt.SUPERMARKETS_ENABLED), Tile.SUPERMARKET, get_required_number_of_supermarkets()),
+    ]
 
-    print(f'There must be {nb_houses} houses on the grid.')
-    print(f'There must be {nb_hospitals} hospitals on the grid.')
-
-    # sets the number of houses there must be in the city
-    s.add(Sum([If(s_grid[y][x] == BitVecVal(Tile.HOUSE, 3), 1, 0) for y in range(h) for x in range(w)]) == nb_houses)
-
-    # sets the number of hopitals there must be in the city
-    s.add(Sum([If(s_grid[y][x] == BitVecVal(Tile.HOSPITAL, 3), 1, 0) for y in range(h) for x in range(w)]) == nb_hospitals)
+    for b, t, n in nb_buildings:
+        if not b: continue
+        print(f'There must be {n} {t.name} on the grid.')
+        s.add(Sum([If(s_grid[y][x] == BitVecVal(t, 3), 1, 0) for y in range(h) for x in range(w)]) == n)
 
     def cond_tiles_of_type_in_square_radius(t : BitVecVal, x0, y0, rad, nb):
         result = []
         for dy, dx in itertools.product(range(-rad, rad + 1), range(-rad, rad + 1)):
-            x, y = x0 + dx, y0 + dy
-            if x >= 0 and x < w and y >= 0 and y < h and (x,y) in get_possible_pos():
-                result.append((s_grid[y][x] == t, 1))
-        return And(PbGe(result, nb), PbLe(result, nb))
+            if abs(dx) + abs(dy) <= rad:
+                x, y = x0 + dx, y0 + dy
+                if x >= 0 and x < w and y >= 0 and y < h:
+                    result.append((s_grid[y][x] == t, 1))
+        return PbGe(result, nb)
     
     def cond_tiles_of_type_in_line(t: BitVecVal, x0, y0, rad, nb):
         result = []
         for x in range(x0 - rad, x0 + rad + 1):
             if x >= 0 and x < w:
                 result.append((s_grid[y0][x] == t, 1))
-        return And(PbGe(result, nb), PbLe(result, nb))
+        return PbGe(result, nb)
     
     def cond_tiles_of_type_in_column(t: BitVecVal, x0, y0, rad, nb):
         result = []
         for y in range(y0 - rad, y0 + rad + 1):
-            if y >= 0 and y < h and grid[y][x0]:
+            if y >= 0 and y < h:
                 result.append((s_grid[y][x0] == t, 1))
-        return And(PbGe(result, nb), PbLe(result, nb))
+        return PbGe(result, nb)
 
-    # tile of type 'source' must have n tiles of type 'in_radius' in a radius of 'rad'
-    def constraint_n_select_in_square_radius(source : Tile, n : int, rad : int, in_radius : Tile):
-        for x, y in get_possible_pos():
+    # tile of type 'source' must have at least n tiles of type 'in_radius' in a radius of 'rad'
+    def constraint_n_select_in_square_radius(source : Tile, n : int, rad : int, in_radius : Tile, possible_pos):
+        for x, y in possible_pos:
             c = cond_tiles_of_type_in_square_radius(BitVecVal(in_radius, 3), x, y, rad, n)
             s.add(Implies(s_grid[y][x] == BitVecVal(source, 3), c))
             # print(Implies(s_grid[y][x] == BitVecVal(source, 3), c))
 
-    # tile of type 'source' must have at least n_min and at most n_max tiles of type 'in_radius' in a its axises
-    def constraint_n_select_in_axis(source : Tile, n : int, in_axis : Tile):
-        for x, y in get_possible_pos():
-            c_c = cond_tiles_of_type_in_column(BitVecVal(in_axis, 3), x, y, n)
-            l_c = cond_tiles_of_type_in_line(BitVecVal(in_axis, 3), x, y, n)
-            s.add(Implies(s_grid[y][x] == BitVecVal(source, 3), And(c_c, l_c)))
+    # tile of type 'source' must have at least n tiles of type 'in_radius' in its axis
+    def constraint_n_select_in_axis(source : Tile, n : int, rad : int, in_axis : Tile, possible_pos):
+        for x, y in possible_pos:
+            c_c = cond_tiles_of_type_in_column(BitVecVal(in_axis, 3), x, y, rad, n)
+            l_c = cond_tiles_of_type_in_line(BitVecVal(in_axis, 3), x, y, rad, n)
+            s.add(Implies(s_grid[y][x] == BitVecVal(source, 3), Or(c_c, l_c)))
 
-    if constraint_enabled(Opt.HOSPITALS_NEAR_PATIENTS):
+    if constraint_enabled(Opt.HOSPITALS_ENABLED) and constraint_enabled(Opt.HOSPITALS_NEAR_PATIENTS):
         n = get_number_of_houses_required_near_hospital()
         print(f'Hospitals must have {n} houses around them in a radius of 3.')
-        constraint_n_select_in_square_radius(Tile.HOSPITAL, n, 3, Tile.HOUSE)
+        constraint_n_select_in_square_radius(Tile.HOSPITAL, n, 3, Tile.HOUSE, get_possible_pos())
     
+    if constraint_enabled(Opt.HARBOURS_ENABLED):
+        constraint_n_select_in_square_radius(Tile.HARBOUR, 1, 1, Tile.WATER, get_possible_water_pos())
+
+    if constraint_enabled(Opt.SUPERMARKETS_ENABLED) and constraint_enabled(Opt.SUPERMARKETS_ALIGNED_WITH_CLIENTS):
+        constraint_n_select_in_axis(Tile.SUPERMARKET, 3, 2, Tile.HOUSE, get_possible_pos())
+
     print('Checking satisfiability (solving constraints)...')
     if s.check() == sat:
         print('Solved.', flush=True)

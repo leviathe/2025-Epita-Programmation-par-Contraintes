@@ -59,11 +59,11 @@ function registerOptions(options) {
 
             function checkUpdate() {
                 eel.option_update(opt.id, oCheck.checked)
-                localStorage.setItem(opt.name, oCheck.value)
+                localStorage.setItem(opt.name, oCheck.checked)
             }
             oCheck.onchange = checkUpdate
 
-            if (defaultValue === true) oCheck.checked = true
+            if (defaultValue !== null) oCheck.checked = defaultValue === "true" ? true : defaultValue === true
 
             o.classList.remove('template')
             category.appendChild(o)

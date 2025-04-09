@@ -57,13 +57,18 @@ class Opt(StringEnum):
     POPULATION = 'population'
     HOUSE_CAPACITY = 'house_capacity'
     HOSPITAL_CAPACITY = 'hospital_capacity'
+    NUMBER_OF_HARBOURS = 'harbours_number'
 
     # Solver and Constraints
     SOLVER = 'solver'
 
     BUILDINGS_NEXT_TO_AT_LEAST_A_ROAD = 'buildings_next_to_at_least_a_road'
+    HOSPITALS_ENABLED = 'hospitals_enabled'
     HOSPITALS_NEAR_PATIENTS = 'hospitals_near_patients'
-    
+    HARBOURS_ENABLED = 'harbours_enabled'
+    SUPERMARKETS_ENABLED = 'supermarkets_enabled'
+    SUPERMARKETS_ALIGNED_WITH_CLIENTS = 'supermarkets_aligned_with_clients'
+
 
 class OptCat(StringEnum):
     GRID = 'GRID',
@@ -85,6 +90,7 @@ def register_options():
         RangeOption(Opt.POPULATION, 'Population', OptCat.CITY_PARAMETERS, 500, 10, 1000, 10),
         RangeOption(Opt.HOUSE_CAPACITY, 'House Capacity', OptCat.CITY_PARAMETERS, 10, 1, 10, 1),
         RangeOption(Opt.HOSPITAL_CAPACITY, 'Hospital Capacity', OptCat.CITY_PARAMETERS, 50, 10, 100, 5),
+        RangeOption(Opt.NUMBER_OF_HARBOURS, 'Number of harbours', OptCat.CITY_PARAMETERS, 2, 1, 5, 1),
 
         # Solver and Constraints
         SelectOption(Opt.SOLVER, 'Solver', OptCat.SOLVER_AND_CONSTRAINTS, None, ['NONE'] + list(generator.SOLVER_ALGORITHMS.keys())),
