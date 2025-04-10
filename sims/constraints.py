@@ -52,3 +52,6 @@ def get_required_number_of_supermarkets():
 
 def get_required_number_of_harbours():
     return o.get(o.Opt.NUMBER_OF_HARBOURS)
+
+def get_required_number_of_factories():
+    return 2

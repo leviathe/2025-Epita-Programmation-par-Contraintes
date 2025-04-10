@@ -4,7 +4,7 @@ from typing import Tuple
 
 from sims.utils import Tile
 from sims.options import Opt, get
-from sims.constraints import constraint_enabled, get_required_number_of_houses, get_required_number_of_hospitals, get_number_of_houses_required_near_hospital, get_required_number_of_harbours, get_required_number_of_supermarkets
+from sims.constraints import constraint_enabled, get_required_number_of_houses, get_required_number_of_hospitals, get_number_of_houses_required_near_hospital, get_required_number_of_harbours, get_required_number_of_supermarkets, get_required_number_of_factories
 
 import sims.generator as generator    
 
@@ -63,7 +63,7 @@ def solve(grid : list[list[int]]) -> Tuple[bool, list[list[int]]]:
     s = Solver()
 
     fixed_tiles = [ Tile.ROAD, Tile.WATER ]
-    buildings_tiles = [ Tile.HOUSE ]
+    buildings_tiles = [ Tile.HOUSE, Tile.FACTORY ]
     if constraint_enabled(Opt.HOSPITALS_ENABLED): buildings_tiles += [Tile.HOSPITAL]
     if constraint_enabled(Opt.SUPERMARKETS_ENABLED): buildings_tiles += [Tile.SUPERMARKET]
     water_buildings_tiles = [ Tile.HARBOUR ] if constraint_enabled(Opt.HARBOURS_ENABLED) else []
@@ -99,6 +99,7 @@ def solve(grid : list[list[int]]) -> Tuple[bool, list[list[int]]]:
         (constraint_enabled(Opt.HOSPITALS_ENABLED), Tile.HOSPITAL, get_required_number_of_hospitals()),
         (constraint_enabled(Opt.HARBOURS_ENABLED), Tile.HARBOUR, get_required_number_of_harbours()),
         (constraint_enabled(Opt.SUPERMARKETS_ENABLED), Tile.SUPERMARKET, get_required_number_of_supermarkets()),
+        (True, Tile.FACTORY, get_required_number_of_factories()),
     ]
 
     for b, t, n in nb_buildings:
@@ -153,6 +154,8 @@ def solve(grid : list[list[int]]) -> Tuple[bool, list[list[int]]]:
 
     if constraint_enabled(Opt.SUPERMARKETS_ENABLED) and constraint_enabled(Opt.SUPERMARKETS_ALIGNED_WITH_CLIENTS):
         constraint_n_select_in_axis(Tile.SUPERMARKET, 3, 2, Tile.HOUSE, get_possible_pos())
+
+    constraint_n_select_in_square_radius(Tile.FACTORY, 8, 2, Tile.NONE, get_possible_pos())
 
     print('Checking satisfiability (solving constraints)...')
     if s.check() == sat:
