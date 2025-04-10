@@ -55,7 +55,7 @@ def generate():
                 return generated
         eel.step(f'Solving failed (either unsolvable or too complex) 😔')
     else:
-        eel.step(f'You did not select a solver, so that\'s what you get 😎')
+        eel.step(f'You did not select a solver, so that\'s what you get 😎')    
 
     # grid = z3_solver.solve(grid)
     return r_generated

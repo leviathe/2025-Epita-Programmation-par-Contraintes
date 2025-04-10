@@ -17,7 +17,8 @@ let Tile = {
     6: 'SUPERMARKET',
     7: 'FACTORY',
     8: 'FIRE_STATION',
-    9: 'TOWN_HALL'
+    9: 'TOWN_HALL',
+    10: 'BRIDGE_ROAD'
 }
 
 // Enum for Tile texture
@@ -31,7 +32,8 @@ let TileTexture = {
     6: ['supermarket'],
     7: ['factory'],
     8: ['fire_station'],
-    9: ['town_hall']
+    9: ['town_hall'],
+    10: ['bridge_road'],
 }
 
 async function LoadTextures() {
@@ -167,7 +169,7 @@ async function LoadCanvas(grid) {
     const sprites = []
 
     for (let y = 0; y < grid.length; y++) {
-        for (let x = 0; x < grid[y].length; x++) {
+        for (let x = 0; x < grid[0].length; x++) {
             const sprite = new PIXI.Sprite(GetTexture(grid[y][x]));
             
             sprite.x = x * 16;
