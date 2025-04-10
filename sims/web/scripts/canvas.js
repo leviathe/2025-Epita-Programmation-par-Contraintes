@@ -13,9 +13,11 @@ let Tile = {
     2: 'WATER',
     3: 'HOUSE',
     4: 'HOSPITAL',
-    5: 'DAM',
-    6: 'HARBOUR',
-    7: 'SUPERMARKET',
+    5: 'HARBOUR',
+    6: 'SUPERMARKET',
+    7: 'FACTORY',
+    8: 'FIRE_STATION',
+    9: 'TOWN_HALL'
 }
 
 // Enum for Tile texture
@@ -25,9 +27,11 @@ let TileTexture = {
     2: ['water', 'water0', 'water1'],
     3: ['house', 'house0', 'house1'],
     4: ['hospital'],
-    6: ['harbour'],
-    7: ['supermarket']
-    // 5: ['dam']
+    5: ['harbour'],
+    6: ['supermarket'],
+    7: ['factory'],
+    8: ['fire_station'],
+    9: ['town_hall']
 }
 
 async function LoadTextures() {

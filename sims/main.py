@@ -8,6 +8,7 @@ eel.init(folder / 'web', allowed_extensions=['.js', '.html'])
 import sims.labyrinth_rg
 import sims.lsystem_rg
 import sims.z3_solver
+import sims.ortools_solver_2
 import sims.generator as generator
 import sims.options as options
 import sims.constraints as constraints

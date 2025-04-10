@@ -29,7 +29,7 @@ class SelectOption(Option):
         return super().serialize() | { 'options': self.options }
 
 class CheckboxOption(Option):
-    def __init__(self, id, name, category, default):       
+    def __init__(self, id, name, category, default):
         super().__init__(id, name, category, 'checkbox', default)
 
 @eel.expose
@@ -44,14 +44,12 @@ def register_option(option : Option):
     OPTIONS[option.id] = option
     
 class Opt(StringEnum):
-    #Grid
-    
     GRID_WIDTH = 'grid_width'
     GRID_HEIGHT = 'grid_height'
-    
+
     # World Generation
     ROAD_GENERATION_ALGORITHM = 'road_generation_algorithm'
-    GENERATE_RIVERS = 'generate_rivers'    
+    GENERATE_RIVERS = 'generate_rivers'
 
     # City parameters
     POPULATION = 'population'
@@ -81,9 +79,10 @@ def register_options():
         # Grid
         RangeOption(Opt.GRID_WIDTH, 'Grid Width', OptCat.GRID, 25, 5, 25, 5),
         RangeOption(Opt.GRID_HEIGHT, 'Grid Height', OptCat.GRID, 25, 5, 25, 5),
-        
-        # World Generation 
-        SelectOption(Opt.ROAD_GENERATION_ALGORITHM, 'Road Generation Algorithm', OptCat.WORLD_GENERATION, None, list(generator.ROAD_GENERATION_ALGORITHMS.keys())),
+
+        # World Generation
+        SelectOption(Opt.ROAD_GENERATION_ALGORITHM, 'Road Generation Algorithm', OptCat.WORLD_GENERATION, None,
+                     list(generator.ROAD_GENERATION_ALGORITHMS.keys())),
         CheckboxOption(Opt.GENERATE_RIVERS, 'Generate Rivers', OptCat.WORLD_GENERATION, None),
 
         # City Parameters

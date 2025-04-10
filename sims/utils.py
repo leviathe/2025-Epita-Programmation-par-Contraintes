@@ -6,9 +6,11 @@ class Tile(IntEnum):
     WATER = 2
     HOUSE = 3
     HOSPITAL = 4
-    DAM = 5
-    HARBOUR = 6
-    SUPERMARKET = 7
+    HARBOUR = 5
+    SUPERMARKET = 6
+    FACTORY = 7
+    FIRE_STATION = 8
+    TOWN_HALL = 9
 
 class Direction(IntEnum):
     RIGHT = 0
