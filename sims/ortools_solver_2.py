@@ -41,7 +41,7 @@ MAX_SHOP_DISTANCE = 1
 
 NB_TOWN_HALL = 1
 RADIUS_TOWN_HALL = 1
-REQUIRED_NB_TILE_TOWN_HALL = 3
+REQUIRED_NB_TILE_TOWN_HALL = 1
 
 CROSS_CONSTRAINT_RADIUS = 1
 CROSS_CONSTRAINT = 1
@@ -176,8 +176,9 @@ def add_fire_stations(model, grid, rows, cols, fire_stations, occupied):
 
 def add_town_hall(model, grid, rows, cols, town_hall, occupied):
     def constraint(var, x, y):
+        # Exige au moins 1 route en contact direct (comme une maison)
         if BUILD_NEXT_ROAD:
-            around_constraint(model, grid, var, x, y, Tile.ROAD, required=REQUIRED_NB_TILE_TOWN_HALL, radius=RADIUS_TOWN_HALL)
+            cross_constraint(model, grid, var, x, y, Tile.ROAD, REQUIRED_NB_TILE_TOWN_HALL, RADIUS_TOWN_HALL)
     create_single_tile_building(model, grid, rows, cols, "mayor", town_hall, occupied, constraint)
 
 def add_hospitals(model, grid, rows, cols, hospitals, hospital_capacities, occupied):
@@ -253,12 +254,6 @@ def add_constraints(model, rows, cols, houses, hospitals, factories, fire_statio
                 if abs(fx - cx) + abs(fy - cy) <= RADIUS_FIRE_STATION
             ]
             model.Add(sum(nearby_factories) <= CAPACITY_FIRE_STATION)
-
-    if BUILD_TOWN_HALL:
-        for hvar, hx, hy in houses:
-            near_mayor = [mvar for mvar, mx, my in town_hall if abs(hx - mx) + abs(hy - my) <= 6]
-            if near_mayor:
-                model.AddBoolOr(near_mayor).OnlyEnforceIf(hvar)
 
     if BUILD_HOSPITALS:
         population_terms = [var * house_capacities[(x, y)] for var, x, y in houses]
