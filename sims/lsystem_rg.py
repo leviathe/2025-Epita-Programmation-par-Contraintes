@@ -48,7 +48,7 @@ class LSystem:
         for char in self.current_state:
             if debug:
                 print(f"Processing '{char}' at x={x}, y={y}, direction={direction}")
-            if char in ['F', 'G']:
+            if char in "ABCDEFG":
                 x, y, grid = self._move(x, y, direction, step_size, width, height, grid, full_char)
             elif char == '+':
                 direction = (direction + 1) % 4
@@ -88,14 +88,20 @@ class LSystem:
 
         return x, y, grid
 
+def random_pattern():
+    choices = "ABCDEFG+-"
 
-def generate_l_system_roads() -> list[list[int]]:
+    return "".join([random.choice(choices) for i in range(random.randint(3, 5))])
+
+def generate_l_system_roads(grid) -> list[list[int]]:
     grid_width, grid_height = get(Opt.GRID_WIDTH), get(Opt.GRID_HEIGHT)
     system = LSystem(
-        axiom="F+F+F+F",
-        rules={"F": "FF+F-F+F+FF"}
+        axiom=random_pattern(),
+        rules={"F": random_pattern(), "G": random_pattern(), "A": random_pattern(), "B": random_pattern(),
+        "C": random_pattern(), "D": random_pattern(), "E": random_pattern()}
     )
-    system.iterate(3)
+
+    system.iterate(5)
     return system.render_ascii(width=grid_width, height=grid_height)
 
 generator.register_road_generation_func('LSYSTEM', generate_l_system_roads)
