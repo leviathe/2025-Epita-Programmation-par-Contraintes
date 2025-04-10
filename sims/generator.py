@@ -3,6 +3,7 @@ import eel
 import random
 
 from sims.options import Opt, get
+from sims.utils import Tile
 from sims.river_rg import generate_river
 
 ROAD_GENERATION_ALGORITHMS = {}
@@ -31,12 +32,16 @@ def random_solving_phrase(i):
 
 @eel.expose
 def generate():
-    eel.step('Generating roads 🛣️')
-    r_generated = ROAD_GENERATION_ALGORITHMS[get(Opt.ROAD_GENERATION_ALGORITHM)]()
+    eel.step('Generating background')
+    grid_width, grid_height = get(Opt.GRID_WIDTH), get(Opt.GRID_HEIGHT)
+    r_generated = [[Tile.NONE for _ in range(grid_width)] for _ in range(grid_height)]
     
     if get(Opt.GENERATE_RIVERS):
         eel.step('Generating rivers 🌊')
         r_generated = generate_river(r_generated)
+
+    eel.step('Generating roads 🛣️')
+    r_generated = ROAD_GENERATION_ALGORITHMS[get(Opt.ROAD_GENERATION_ALGORITHM)](r_generated)
 
     solver = get(Opt.SOLVER)
 
