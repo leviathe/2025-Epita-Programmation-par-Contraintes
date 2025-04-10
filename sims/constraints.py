@@ -6,9 +6,9 @@ import sims.options as o
 CONSTRAINTS = {}
 
 class Constraint():
-    def __init__(self, opt : o.Opt, title : str):
+    def __init__(self, opt : o.Opt, title : str, depends_on):
         self.opt = opt
-        self.option = o.CheckboxOption(opt, title, o.OptCat.SOLVER_AND_CONSTRAINTS, None)
+        self.option = o.CheckboxOption(opt, title, o.OptCat.SOLVER_AND_CONSTRAINTS, None, depends_on)
 
         o.register_option(self.option)
 
@@ -26,12 +26,12 @@ def register_constraint(constraint : Constraint):
 
 def register_constraints():
     consts = [
-        Constraint(o.Opt.BUILDINGS_NEXT_TO_AT_LEAST_A_ROAD, 'Buildings next to a road'),
-        Constraint(o.Opt.HARBOURS_ENABLED, 'City has harbours'),
-        Constraint(o.Opt.HOSPITALS_ENABLED, 'City has hospitals'),
-        Constraint(o.Opt.SUPERMARKETS_ENABLED, 'City has supermarkets'),
-        Constraint(o.Opt.HOSPITALS_NEAR_PATIENTS, 'Hospitals near patients'),
-        Constraint(o.Opt.SUPERMARKETS_ALIGNED_WITH_CLIENTS, 'Supermarkets aligned with clients'),
+        Constraint(o.Opt.BUILDINGS_NEXT_TO_AT_LEAST_A_ROAD, 'Buildings next to a road', []),
+        Constraint(o.Opt.HARBOURS_ENABLED, 'City has harbours', [(o.Opt.GENERATE_RIVERS, True)]),
+        Constraint(o.Opt.HOSPITALS_ENABLED, 'City has hospitals', []),
+        Constraint(o.Opt.SUPERMARKETS_ENABLED, 'City has supermarkets', []),
+        Constraint(o.Opt.HOSPITALS_NEAR_PATIENTS, 'Hospitals near patients', []),
+        Constraint(o.Opt.SUPERMARKETS_ALIGNED_WITH_CLIENTS, 'Supermarkets aligned with clients', []),
     ]
 
     for c in consts: register_constraint(c)
