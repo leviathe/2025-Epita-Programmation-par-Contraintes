@@ -57,6 +57,7 @@ class Opt(StringEnum):
     HOSPITAL_CAPACITY = 'hospital_capacity'
     NUMBER_OF_HARBOURS = 'harbours_number'
 
+
     # Solver and Constraints
     SOLVER = 'solver'
 
@@ -67,6 +68,13 @@ class Opt(StringEnum):
     SUPERMARKETS_ENABLED = 'supermarkets_enabled'
     SUPERMARKETS_ALIGNED_WITH_CLIENTS = 'supermarkets_aligned_with_clients'
 
+    FACTORIES_ENABLED = 'factories_enabled'
+    NUMBER_OF_FACTORIES = 'factories_number'
+    DISTANCE_HOUSE_FACTORY = 'distance_house_factory'
+    FIRE_STATIONS_ENABLED = 'fire_stations_enabled'
+    FIRE_STATION_CAPACITY = 'fire_stations_capacity'
+    FIRE_STATION_RADIUS = 'fire_stations_radius'
+    TOWN_HALL_ENABLED = 'town_hall_enabled'
 
 class OptCat(StringEnum):
     GRID = 'GRID',
@@ -90,6 +98,12 @@ def register_options():
         RangeOption(Opt.HOUSE_CAPACITY, 'House Capacity', OptCat.CITY_PARAMETERS, 10, [], 1, 10, 1),
         RangeOption(Opt.HOSPITAL_CAPACITY, 'Hospital Capacity', OptCat.CITY_PARAMETERS, 50, [(Opt.HOSPITALS_ENABLED, True)], 10, 100, 5),
         RangeOption(Opt.NUMBER_OF_HARBOURS, 'Number of harbours', OptCat.CITY_PARAMETERS, 2, [(Opt.HARBOURS_ENABLED, True)], 1, 5, 1),
+        RangeOption(Opt.NUMBER_OF_FACTORIES, 'Number of factories', OptCat.CITY_PARAMETERS, 2, [(Opt.FACTORIES_ENABLED, True)], 1, 10, 1),
+
+        #OR-TOOLS
+        RangeOption(Opt.DISTANCE_HOUSE_FACTORY, 'Distance house-factory', OptCat.SOLVER_AND_CONSTRAINTS, 7, [(Opt.SOLVER, "OR-TOOLS"), (Opt.FACTORIES_ENABLED, True)], 1, 10, 1),
+        RangeOption(Opt.FIRE_STATION_CAPACITY, 'Fire station capacity', OptCat.SOLVER_AND_CONSTRAINTS, 2, [(Opt.SOLVER, "OR-TOOLS"), (Opt.FIRE_STATIONS_ENABLED, True)], 1, 15, 1),
+        RangeOption(Opt.FIRE_STATION_RADIUS, 'Fire station radius', OptCat.SOLVER_AND_CONSTRAINTS, 3, [(Opt.SOLVER, "OR-TOOLS"), (Opt.FIRE_STATIONS_ENABLED, True)], 1, 10, 1),
 
         # Solver and Constraints
         SelectOption(Opt.SOLVER, 'Solver', OptCat.SOLVER_AND_CONSTRAINTS, None, [], ['NONE'] + list(generator.SOLVER_ALGORITHMS.keys())),

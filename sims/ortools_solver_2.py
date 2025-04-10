@@ -1,7 +1,8 @@
 import time
 
-from sims.constraints import get_required_number_of_houses
-from sims.options import Opt
+from sims.constraints import get_required_number_of_houses, constraint_enabled, get_required_number_of_fire_station
+from sims.options import Opt, get
+from sims.constraints import constraint_enabled, get_required_number_of_houses, get_required_number_of_hospitals, get_number_of_houses_required_near_hospital, get_required_number_of_harbours, get_required_number_of_supermarkets, get_required_number_of_factories
 from sims.utils import Tile
 import sims.generator as generator
 from ortools.sat.python import cp_model
@@ -10,33 +11,33 @@ from typing import List, Tuple
 
 # VARIABLES DE GENERATION
 
-BUILD_NEXT_ROAD = True# constraint_enabled(Opt.BUILDINGS_NEXT_TO_AT_LEAST_A_ROAD)
-BUILD_HOSPITALS = True#constraint_enabled(Opt.BUILD_HOSPITALS)
-BUILD_FACTORIES = True#constraint_enabled(Opt.BUILD_FACTORIES)
-BUILD_FIRE_STATIONS = True#constraint_enabled(Opt.BUILD_FIRE_STATIONS)
-BUILD_HARBOUR = True#constraint_enabled(Opt.BUILD_PORTS)
-BUILD_TOWN_HALL = True
-BUILD_SUPERMARKETS = True
+BUILD_NEXT_ROAD = None
+BUILD_HOSPITALS = None
+BUILD_FACTORIES = None
+BUILD_FIRE_STATIONS = None
+BUILD_HARBOUR = None
+BUILD_TOWN_HALL = None
+BUILD_SUPERMARKETS = None
 
-NB_HOUSE = 5
-CAPACITY_HOUSE = 10
+NB_HOUSE = None
+CAPACITY_HOUSE = None
 
-NB_HOSPITAL = 2
+NB_HOSPITAL = None
 RADIUS_HOSPITAL = 3
-CAPACITY_HOSPITAL = 50
+CAPACITY_HOSPITAL = None
 
-NB_FACTORY = 4
-DISTANCE_HOUSE_FACTORY = 5
+NB_FACTORY = None
+DISTANCE_HOUSE_FACTORY = None
 
-NB_FIRE_STATION = 2
-CAPACITY_FIRE_STATION = 4
-RADIUS_FIRE_STATION = 2
+NB_FIRE_STATION = None
+CAPACITY_FIRE_STATION = None
+RADIUS_FIRE_STATION = None
 
-NB_HARBOUR = 0
+NB_HARBOUR = None
 
-NB_SUPERMARKET = 1
-SUPERMARKETS_ALIGNED = True
-MAX_SHOP_DISTANCE = 3
+NB_SUPERMARKET = None
+SUPERMARKETS_ALIGNED = None
+MAX_SHOP_DISTANCE = 1
 
 NB_TOWN_HALL = 1
 RADIUS_TOWN_HALL = 1
@@ -58,8 +59,6 @@ PORT_SHAPES = [
     [(0, 0), (0, 1), (0, 2), (0, 3)],
     [(0, 0), (1, 0), (2, 0), (3, 0)]
 ]
-
-# TODO - LINK VAR TO UI
 
 def count_neighbors(grid: List[List[int]], x: int, y: int, radius: int, tile:Tile, cross_only: bool = False) -> int:
     rows, cols = len(grid), len(grid[0])
@@ -129,6 +128,11 @@ def create_shape_buildings(model, grid, rows, cols, name, shapes, collection, ca
                     collection.append((var, x, y, shape_id))
                     capacity_dict[(x, y, shape_id)] = capacity_value
                     register_occupation(cells, var, occupied)
+
+                    if BUILD_NEXT_ROAD:
+                        x, y = cells[0]
+                        cross_constraint(model, grid, var, x, y, Tile.ROAD, required=1, radius=1)
+
 
 def add_houses(model, grid, rows, cols, houses, house_capacities, occupied):
     def constraint(var, x, y):
@@ -336,7 +340,43 @@ def solve_model(model: cp_model.CpModel, houses, hospitals, factories, fire_stat
         return False, None
     return True, grid
 
+def set_parameters():
+    global BUILD_NEXT_ROAD, BUILD_HOSPITALS, BUILD_FACTORIES, BUILD_FIRE_STATIONS
+    global BUILD_HARBOUR, BUILD_TOWN_HALL, BUILD_SUPERMARKETS
+    global NB_HOUSE, CAPACITY_HOUSE, NB_HOSPITAL, CAPACITY_HOSPITAL
+    global NB_FACTORY, DISTANCE_HOUSE_FACTORY
+    global NB_FIRE_STATION, CAPACITY_FIRE_STATION, RADIUS_FIRE_STATION
+    global NB_HARBOUR, NB_SUPERMARKET, SUPERMARKETS_ALIGNED
+
+    BUILD_NEXT_ROAD = constraint_enabled(Opt.BUILDINGS_NEXT_TO_AT_LEAST_A_ROAD)
+    BUILD_HOSPITALS = constraint_enabled(Opt.HOSPITALS_ENABLED)
+    BUILD_FACTORIES = constraint_enabled(Opt.FACTORIES_ENABLED)
+    BUILD_FIRE_STATIONS = constraint_enabled(Opt.FIRE_STATIONS_ENABLED)
+    BUILD_HARBOUR = constraint_enabled(Opt.HARBOURS_ENABLED)
+    BUILD_TOWN_HALL = constraint_enabled(Opt.TOWN_HALL_ENABLED)
+    BUILD_SUPERMARKETS = constraint_enabled(Opt.SUPERMARKETS_ENABLED)
+
+    NB_HOUSE = get_required_number_of_houses()
+    CAPACITY_HOUSE = get(Opt.HOUSE_CAPACITY)
+
+    NB_HOSPITAL = get_required_number_of_hospitals()
+    CAPACITY_HOSPITAL = get(Opt.HOSPITAL_CAPACITY)
+
+    NB_FACTORY = get_required_number_of_factories()
+    DISTANCE_HOUSE_FACTORY = get(Opt.DISTANCE_HOUSE_FACTORY)
+
+    NB_FIRE_STATION = get_required_number_of_fire_station()
+    CAPACITY_FIRE_STATION = get(Opt.FIRE_STATION_CAPACITY)
+    RADIUS_FIRE_STATION = get(Opt.FIRE_STATION_RADIUS)
+
+    NB_HARBOUR = get_required_number_of_harbours()
+
+    NB_SUPERMARKET = get_required_number_of_supermarkets()
+    SUPERMARKETS_ALIGNED = constraint_enabled(Opt.SUPERMARKETS_ALIGNED_WITH_CLIENTS)
+
+
 def ortools_solveur(grid : list[list[int]]) -> Tuple[bool, list[list[int]]]:
+    set_parameters()
     start = time.time()
     print("Model creation")
     model, houses, hospitals, factories, fire_stations, ports, town_hall, supermarkets = create_model(grid)

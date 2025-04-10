@@ -32,6 +32,10 @@ def register_constraints():
         Constraint(o.Opt.SUPERMARKETS_ENABLED, 'City has supermarkets', []),
         Constraint(o.Opt.HOSPITALS_NEAR_PATIENTS, 'Hospitals near patients', []),
         Constraint(o.Opt.SUPERMARKETS_ALIGNED_WITH_CLIENTS, 'Supermarkets aligned with clients', []),
+
+        Constraint(o.Opt.FACTORIES_ENABLED, 'City has factories', []),
+        Constraint(o.Opt.FIRE_STATIONS_ENABLED, 'City has fire stations', [(o.Opt.SOLVER, "OR-TOOLS")]),
+        Constraint(o.Opt.TOWN_HALL_ENABLED, 'City has town hall', [(o.Opt.SOLVER, "OR-TOOLS")]),
     ]
 
     for c in consts: register_constraint(c)
@@ -54,4 +58,7 @@ def get_required_number_of_harbours():
     return o.get(o.Opt.NUMBER_OF_HARBOURS)
 
 def get_required_number_of_factories():
-    return 2
+    return o.get(o.Opt.NUMBER_OF_FACTORIES)
+
+def get_required_number_of_fire_station():
+    return math.ceil(o.get(o.Opt.NUMBER_OF_FACTORIES) / o.get(o.Opt.FIRE_STATION_CAPACITY))
