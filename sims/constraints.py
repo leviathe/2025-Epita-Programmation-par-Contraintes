@@ -30,7 +30,7 @@ def register_constraints():
         Constraint(o.Opt.HARBOURS_ENABLED, 'City has harbours', [(o.Opt.GENERATE_RIVERS, True)]),
         Constraint(o.Opt.HOSPITALS_ENABLED, 'City has hospitals', []),
         Constraint(o.Opt.SUPERMARKETS_ENABLED, 'City has supermarkets', []),
-        Constraint(o.Opt.HOSPITALS_NEAR_PATIENTS, 'Hospitals near patients', []),
+        Constraint(o.Opt.HOSPITALS_NEAR_PATIENTS, 'Hospitals near patients', [(o.Opt.SOLVER, "Z3")]),
         Constraint(o.Opt.SUPERMARKETS_ALIGNED_WITH_CLIENTS, 'Supermarkets aligned with clients', []),
 
         Constraint(o.Opt.FACTORIES_ENABLED, 'City has factories', []),

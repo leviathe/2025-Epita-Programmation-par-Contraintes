@@ -104,4 +104,4 @@ def generate_l_system_roads(grid) -> list[list[int]]:
     system.iterate(5)
     return system.render_ascii(width=grid_width, height=grid_height), set()
 
-generator.register_road_generation_func('LSYSTEM', generate_l_system_roads)
+# generator.register_road_generation_func('LSYSTEM', generate_l_system_roads)

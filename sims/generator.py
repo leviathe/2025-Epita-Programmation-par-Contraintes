@@ -28,7 +28,7 @@ def register_solver_func(algo_name : str, func : Callable[[list[list[int]]], Tup
 SOLVING_PHRASES = ['Scratching my head', 'Powering up my neurons', 'Doing Harvard-level calculations', 'Loading brain.exe', 'Summoning logic', 'Doing brain yoga', 'Spinning gears', 'Crunching numbers', 'Thinking hard', 'Dialing the cosmos', 'Cracking the enigma', 'Engaging overdrive', 'Firing up logic cores', 'Warming up the IQ', 'Digging deep', 'Slapping together a solution', 'Wrestling with logic', 'Fighting the confusion']
 
 def random_solving_phrase(i):
-    return f'(solving) {random.choice(SOLVING_PHRASES)}... (try {i+1}/5)'
+    return f'(solving) {random.choice(SOLVING_PHRASES)}... (try {i+1}/2)'
 
 def convert_road(grid, roads):
     for (x, y) in roads:
@@ -52,7 +52,7 @@ def generate():
     solver = get(Opt.SOLVER)
 
     if solver != 'NONE':
-        for i in range(5):
+        for i in range(2):
             eel.step(random_solving_phrase(i))
             b, generated = SOLVER_ALGORITHMS[solver](r_generated)
             

@@ -101,9 +101,9 @@ def register_options():
         RangeOption(Opt.NUMBER_OF_FACTORIES, 'Number of factories', OptCat.CITY_PARAMETERS, 2, [(Opt.FACTORIES_ENABLED, True)], 1, 10, 1),
 
         #OR-TOOLS
-        RangeOption(Opt.DISTANCE_HOUSE_FACTORY, 'Distance house-factory', OptCat.SOLVER_AND_CONSTRAINTS, 7, [(Opt.SOLVER, "OR-TOOLS"), (Opt.FACTORIES_ENABLED, True)], 1, 10, 1),
-        RangeOption(Opt.FIRE_STATION_CAPACITY, 'Fire station capacity', OptCat.SOLVER_AND_CONSTRAINTS, 2, [(Opt.SOLVER, "OR-TOOLS"), (Opt.FIRE_STATIONS_ENABLED, True)], 1, 15, 1),
-        RangeOption(Opt.FIRE_STATION_RADIUS, 'Fire station radius', OptCat.SOLVER_AND_CONSTRAINTS, 3, [(Opt.SOLVER, "OR-TOOLS"), (Opt.FIRE_STATIONS_ENABLED, True)], 1, 10, 1),
+        RangeOption(Opt.DISTANCE_HOUSE_FACTORY, 'Distance house-factory', OptCat.CITY_PARAMETERS, 7, [(Opt.SOLVER, "OR-TOOLS"), (Opt.FACTORIES_ENABLED, True)], 1, 10, 1),
+        RangeOption(Opt.FIRE_STATION_CAPACITY, 'Fire station capacity', OptCat.CITY_PARAMETERS, 2, [(Opt.SOLVER, "OR-TOOLS"), (Opt.FIRE_STATIONS_ENABLED, True)], 1, 15, 1),
+        RangeOption(Opt.FIRE_STATION_RADIUS, 'Fire station radius', OptCat.CITY_PARAMETERS, 3, [(Opt.SOLVER, "OR-TOOLS"), (Opt.FIRE_STATIONS_ENABLED, True)], 1, 10, 1),
 
         # Solver and Constraints
         SelectOption(Opt.SOLVER, 'Solver', OptCat.SOLVER_AND_CONSTRAINTS, None, [], ['NONE'] + list(generator.SOLVER_ALGORITHMS.keys())),
