@@ -91,6 +91,7 @@ def _generate_road(grid, start_x, start_y):
 def generate_labyrinth_roads(grid) -> list[list[int]]:
     grid_width, grid_height = get(Opt.GRID_WIDTH), get(Opt.GRID_HEIGHT)
     flooded = np.zeros_like(grid)
+    roads = set()
     set_i = 1
     prev_road = []
 
@@ -128,13 +129,15 @@ def generate_labyrinth_roads(grid) -> list[list[int]]:
         dy = 1 if sy < ey else -1
 
         while sx != ex:
+            roads.add((sx, sy))
             grid[sy][sx] = Tile.ROAD
             sx += dx
 
         while sy != ey:
+            roads.add((sx, sy))
             grid[sy][sx] = Tile.ROAD
             sy += dy
 
-    return grid
+    return grid, roads
 
 generator.register_road_generation_func('LABYRINTH', generate_labyrinth_roads)

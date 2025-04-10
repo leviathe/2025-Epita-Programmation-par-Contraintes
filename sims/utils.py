@@ -11,6 +11,7 @@ class Tile(IntEnum):
     FACTORY = 7
     FIRE_STATION = 8
     TOWN_HALL = 9
+    BRIDGE_ROAD = 10
 
 class Direction(IntEnum):
     RIGHT = 0

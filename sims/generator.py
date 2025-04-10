@@ -30,6 +30,12 @@ SOLVING_PHRASES = ['Scratching my head', 'Powering up my neurons', 'Doing Harvar
 def random_solving_phrase(i):
     return f'(solving) {random.choice(SOLVING_PHRASES)}... (try {i+1}/5)'
 
+def convert_road(grid, roads):
+    for (x, y) in roads:
+        grid[y][x] = Tile.BRIDGE_ROAD
+
+    return grid
+
 @eel.expose
 def generate():
     eel.step('Generating background')
@@ -41,7 +47,7 @@ def generate():
         r_generated = generate_river(r_generated)
 
     eel.step('Generating roads 🛣️')
-    r_generated = ROAD_GENERATION_ALGORITHMS[get(Opt.ROAD_GENERATION_ALGORITHM)](r_generated)
+    r_generated, roads = ROAD_GENERATION_ALGORITHMS[get(Opt.ROAD_GENERATION_ALGORITHM)](r_generated)
 
     solver = get(Opt.SOLVER)
 
@@ -52,10 +58,12 @@ def generate():
             
             if b:
                 eel.step(f'Solved 🎉')
-                return generated
+                return convert_road(generated, roads)
         eel.step(f'Solving failed (either unsolvable or too complex) 😔')
     else:
         eel.step(f'You did not select a solver, so that\'s what you get 😎')    
 
+    # Put road
+
     # grid = z3_solver.solve(grid)
-    return r_generated
+    return convert_road(r_generated, roads)
