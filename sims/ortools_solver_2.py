@@ -25,13 +25,12 @@ NB_HOSPITAL = 2
 RADIUS_HOSPITAL = 3
 CAPACITY_HOSPITAL = 50
 
-NB_FACTORY = 3
+NB_FACTORY = 4
 DISTANCE_HOUSE_FACTORY = 5
 
-NB_FIRE_STATION = 1
+NB_FIRE_STATION = 2
 CAPACITY_FIRE_STATION = 4
-RADIUS_FIRE_STATION = 3
-NB_REQUIRED_FACTORY = 4
+RADIUS_FIRE_STATION = 2
 
 NB_HARBOUR = 0
 
@@ -40,7 +39,7 @@ SUPERMARKETS_ALIGNED = True
 MAX_SHOP_DISTANCE = 3
 
 NB_TOWN_HALL = 1
-RADIUS_TOWN_HALL = 2
+RADIUS_TOWN_HALL = 1
 REQUIRED_NB_TILE_TOWN_HALL = 3
 
 CROSS_CONSTRAINT_RADIUS = 1
@@ -192,8 +191,6 @@ def add_harbours(model, grid, rows, cols, ports, occupied):
                         register_occupation(cells, var, occupied)
 
 def add_constraints(model, rows, cols, houses, hospitals, factories, fire_stations, ports, town_hall, supermarkets, house_capacities, hospital_capacities, occupied):
-    if BUILD_HARBOUR and len(ports) < NB_HARBOUR:
-        raise ValueError(f"Pas assez d'emplacements valides pour {NB_HARBOUR} ports. Trouvé : {len(ports)}")
 
     for vars_in_cell in occupied.values():
         model.Add(sum(vars_in_cell) <= 1)
@@ -241,21 +238,17 @@ def add_constraints(model, rows, cols, houses, hospitals, factories, fire_statio
 
     if BUILD_FACTORIES:
         for fvar, fx, fy in factories:
-            covered_by = [cvar for cvar, cx, cy in fire_stations if abs(fx - cx) + abs(fy - cy) <= 5]
+            covered_by = [cvar for cvar, cx, cy in fire_stations if abs(fx - cx) + abs(fy - cy) <= RADIUS_FIRE_STATION]
             if covered_by:
                 model.AddBoolOr(covered_by).OnlyEnforceIf(fvar)
 
     if BUILD_FIRE_STATIONS:
-        for fvar, fx, fy in fire_stations:
-            factories_in_range = [
-                fac_var for fac_var, fac_x, fac_y in factories
-                if abs(fx - fac_x) + abs(fy - fac_y) <= RADIUS_FIRE_STATION
+        for cvar, cx, cy in fire_stations:
+            nearby_factories = [
+                fvar for fvar, fx, fy in factories
+                if abs(fx - cx) + abs(fy - cy) <= RADIUS_FIRE_STATION
             ]
-
-            model.Add(sum(factories_in_range) <= CAPACITY_FIRE_STATION)
-
-            if len(factories_in_range) < NB_REQUIRED_FACTORY:
-                model.Add(fvar == 0)
+            model.Add(sum(nearby_factories) <= CAPACITY_FIRE_STATION)
 
     if BUILD_TOWN_HALL:
         for hvar, hx, hy in houses:
