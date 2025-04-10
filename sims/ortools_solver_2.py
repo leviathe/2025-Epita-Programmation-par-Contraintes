@@ -2,7 +2,7 @@ import time
 
 from sims.constraints import get_required_number_of_houses
 from sims.options import Opt
-from utils import Tile
+from sims.utils import Tile
 import sims.generator as generator
 from ortools.sat.python import cp_model
 import random

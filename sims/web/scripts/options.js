@@ -7,10 +7,51 @@ let selectOptionTemplate = document.getElementsByClassName('option-select-contai
 eel.expose(registerOptions)
 
 function registerOptions(options) {
+    let opts = {}
+
     for (let opt of options) {
+        opts[opt.id] = {}
+        opts[opt.id]['dependencies'] = {}
+
+        for (let [dep_oid, dep_v] of opt.depends_on) {
+            opts[opt.id]['dependencies'][dep_oid] = dep_v
+        }
+    }
+
+    function hideOrShowDeps() {
+        let i = 0;
+        entries = Object.entries(opts)
+
+        while (i < entries.length) {
+            let [id, opt] = entries[i]
+            let respectsAll = true
+
+            for (let [d_id, d_v] of Object.entries(opt['dependencies'])) {
+                respectsAll = respectsAll && opts[d_id]['get']() === d_v
+            }
+
+            let somethingChanged = false
+
+            if (respectsAll && opt['obj'].classList.contains('hidden')) {
+                somethingChanged = true
+                opt['obj'].classList.remove('hidden')
+            } else if (!respectsAll && !opt['obj'].classList.contains('hidden'))
+            {
+                somethingChanged = true
+                opt['obj'].classList.add('hidden')
+                opt['reset']()
+            }
+
+            i = somethingChanged ? 0 : i + 1;
+        }
+    }
+
+    for (let opt of options) {
+        let op = opts[opt.id]
+
         let category = document.getElementById(`category-${opt.category}`)
 
-        let defaultValue = localStorage.getItem(opt.name)
+        let defaultValue = localStorage.getItem(opt.id)
         
         if (defaultValue === null)
             defaultValue = opt.default 
@@ -36,20 +77,27 @@ function registerOptions(options) {
             oRange.max = opt.max_range
             oRange.step = opt.step
 
-            function rangeUpdate() {
+            op['update'] = function() {
                 oName.innerText = `${opt.name} : ${oRange.value}`
                 eel.option_update(opt.id, parseInt(oRange.value))
-                localStorage.setItem(opt.name, oRange.value)
+                localStorage.setItem(opt.id, oRange.value)
+
+                hideOrShowDeps()
             }
+            oRange.onchange = op['update']
 
-            oRange.onchange = rangeUpdate
-
-            if (defaultValue !== null) oRange.value = defaultValue
+            op['setup'] = () => { 
+                if (defaultValue !== null)
+                    oRange.value = defaultValue
+                op['update']()
+            }
+            op['reset'] = () => {}
+            op['get'] = () => { return oRange.value }
 
             o.classList.remove('template')
             category.appendChild(o)
 
-            rangeUpdate()
+            op['obj'] = o
         }
         else if (opt.type == 'checkbox') {
             let o = checkboxOptionTemplate.cloneNode(true)
@@ -57,18 +105,28 @@ function registerOptions(options) {
             let oName = o.querySelector('.option-checkbox-name')
             oName.innerText = `${opt.name}`
 
-            function checkUpdate() {
+            op['update'] = () => {
                 eel.option_update(opt.id, oCheck.checked)
-                localStorage.setItem(opt.name, oCheck.checked)
-            }
-            oCheck.onchange = checkUpdate
+                localStorage.setItem(opt.id, oCheck.checked)
 
-            if (defaultValue !== null) oCheck.checked = defaultValue === "true" ? true : defaultValue === true
+                hideOrShowDeps()
+            }
+            oCheck.onchange = op['update']
+
+            op['setup'] = () => {
+                if (defaultValue !== null) 
+                    oCheck.checked = defaultValue === "true" ? true : defaultValue === true
+                op['update']()
+            }
+            op['reset'] = () => { 
+                oCheck.checked = false;
+                op['update']()
+            }
+            op['get'] = () => { return oCheck.checked }
+            op['obj'] = o
 
             o.classList.remove('template')
             category.appendChild(o)
-
-            checkUpdate()
         }
         else if (opt.type == 'select') {
             let o = selectOptionTemplate.cloneNode(true)
@@ -84,22 +142,35 @@ function registerOptions(options) {
                 oSelect.appendChild(dom_o)
             }
 
-            function selectUpdate() {
+            op['update'] = () => {
                 eel.option_update(opt.id, oSelect.value)
-                localStorage.setItem(opt.name, oSelect.value)
-            }
-            oSelect.onchange = selectUpdate
+                localStorage.setItem(opt.id, oSelect.value)
 
+                hideOrShowDeps()
+            }
+
+            oSelect.onchange = op['update']
             oSelect.value = opt.options[0]
 
-            if (defaultValue !== null) oSelect.value = defaultValue
+            op['setup'] = () => {
+                if (defaultValue !== null)
+                    oSelect.value = defaultValue
+                op['update']()
+            }
+            op['reset'] = () => {}
+            op['get'] = () => { return oSelect.value } 
+            op['obj'] = o
 
             o.classList.remove('template')
             category.appendChild(o)
-
-            selectUpdate()
         }
 
         category.classList.remove('template')
     }
+
+    for (let opt of options) {
+        opts[opt.id]['setup']()
+    }
+
+    console.log(opts)
 }

@@ -6,31 +6,31 @@ from sims.utils import StringEnum
 OPTIONS = {}
 
 class Option():
-    def __init__(self, id, name, category, type, default):
-        self.id, self.name, self.category, self.type, self.value, self.default = id, name, category, type, None, default
+    def __init__(self, id, name, category, type, default, depends_on):
+        self.id, self.name, self.category, self.type, self.value, self.default, self.depends_on = id, name, category, type, None, default, depends_on
 
     def serialize(self):
-        return { 'id': self.id, 'name': self.name, 'category': self.category, 'type': self.type, 'default': self.default }
+        return { 'id': self.id, 'name': self.name, 'category': self.category, 'type': self.type, 'default': self.default, 'depends_on': self.depends_on }
 
 class RangeOption(Option):
-    def __init__(self, id, name, category, default, min_range, max_range, step):
-        super().__init__(id, name, category, 'range', default)
+    def __init__(self, id, name, category, default, depends_on, min_range, max_range, step):
+        super().__init__(id, name, category, 'range', default, depends_on)
         self.min_range, self.max_range, self.step = min_range, max_range, step
 
     def serialize(self):
         return super().serialize() | { 'min_range': self.min_range, 'max_range': self.max_range, 'step': self.step }
 
 class SelectOption(Option):
-    def __init__(self, id, name, category, default, options : list[str]):
-        super().__init__(id, name, category, 'select', default)
+    def __init__(self, id, name, category, default, depends_on, options : list[str]):
+        super().__init__(id, name, category, 'select', default, depends_on)
         self.options = options
 
     def serialize(self):
         return super().serialize() | { 'options': self.options }
 
 class CheckboxOption(Option):
-    def __init__(self, id, name, category, default):
-        super().__init__(id, name, category, 'checkbox', default)
+    def __init__(self, id, name, category, default, depends_on):
+        super().__init__(id, name, category, 'checkbox', default, depends_on)
 
 @eel.expose
 def option_update(id, value):
@@ -77,22 +77,22 @@ class OptCat(StringEnum):
 def register_options():
     opts = [
         # Grid
-        RangeOption(Opt.GRID_WIDTH, 'Grid Width', OptCat.GRID, 25, 5, 25, 5),
-        RangeOption(Opt.GRID_HEIGHT, 'Grid Height', OptCat.GRID, 25, 5, 25, 5),
+        RangeOption(Opt.GRID_WIDTH, 'Grid Width', OptCat.GRID, 25, [], 5, 25, 5),
+        RangeOption(Opt.GRID_HEIGHT, 'Grid Height', OptCat.GRID, 25, [], 5, 25, 5),
 
         # World Generation
-        SelectOption(Opt.ROAD_GENERATION_ALGORITHM, 'Road Generation Algorithm', OptCat.WORLD_GENERATION, None,
+        SelectOption(Opt.ROAD_GENERATION_ALGORITHM, 'Road Generation Algorithm', OptCat.WORLD_GENERATION, None, [],
                      list(generator.ROAD_GENERATION_ALGORITHMS.keys())),
-        CheckboxOption(Opt.GENERATE_RIVERS, 'Generate Rivers', OptCat.WORLD_GENERATION, None),
+        CheckboxOption(Opt.GENERATE_RIVERS, 'Generate Rivers', OptCat.WORLD_GENERATION, None, []),
 
         # City Parameters
-        RangeOption(Opt.POPULATION, 'Population', OptCat.CITY_PARAMETERS, 500, 10, 1000, 10),
-        RangeOption(Opt.HOUSE_CAPACITY, 'House Capacity', OptCat.CITY_PARAMETERS, 10, 1, 10, 1),
-        RangeOption(Opt.HOSPITAL_CAPACITY, 'Hospital Capacity', OptCat.CITY_PARAMETERS, 50, 10, 100, 5),
-        RangeOption(Opt.NUMBER_OF_HARBOURS, 'Number of harbours', OptCat.CITY_PARAMETERS, 2, 1, 5, 1),
+        RangeOption(Opt.POPULATION, 'Population', OptCat.CITY_PARAMETERS, 500, [], 10, 1000, 10),
+        RangeOption(Opt.HOUSE_CAPACITY, 'House Capacity', OptCat.CITY_PARAMETERS, 10, [], 1, 10, 1),
+        RangeOption(Opt.HOSPITAL_CAPACITY, 'Hospital Capacity', OptCat.CITY_PARAMETERS, 50, [(Opt.HOSPITALS_ENABLED, True)], 10, 100, 5),
+        RangeOption(Opt.NUMBER_OF_HARBOURS, 'Number of harbours', OptCat.CITY_PARAMETERS, 2, [(Opt.HARBOURS_ENABLED, True)], 1, 5, 1),
 
         # Solver and Constraints
-        SelectOption(Opt.SOLVER, 'Solver', OptCat.SOLVER_AND_CONSTRAINTS, None, ['NONE'] + list(generator.SOLVER_ALGORITHMS.keys())),
+        SelectOption(Opt.SOLVER, 'Solver', OptCat.SOLVER_AND_CONSTRAINTS, None, [], ['NONE'] + list(generator.SOLVER_ALGORITHMS.keys())),
     ]
 
     for o in opts: register_option(o)

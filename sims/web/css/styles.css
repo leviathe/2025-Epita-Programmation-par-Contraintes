@@ -78,7 +78,7 @@ body {
     margin-left: auto;
     border-radius: 25px;
     width: 30vw;
-    height: 50vh;
+    height: fit-content;
     background-image: linear-gradient(120deg, #b3a2c9, #a8b0d1, #b1c5d5);
     margin-bottom: 25px;
     box-shadow: rgba(0, 0, 0, 0.45) 0px 25px 20px -20px;
@@ -170,5 +170,9 @@ p {
 }
 
 .template {
+    display: none;
+}
+
+.hidden {
     display: none;
 }
