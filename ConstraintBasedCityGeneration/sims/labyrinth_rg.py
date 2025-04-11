@@ -111,7 +111,8 @@ def generate_labyrinth_roads(grid) -> list[list[int]]:
             flood_fill(grid, flooded, x, y, set_i)
             set_i += 1
 
-            prev_road.append(np.array(list(near_water)))
+            if len(near_water) > 0:
+                prev_road.append(np.array(list(near_water)))
                              
     for i in range(1, len(prev_road)):
         A, B = prev_road[i - 1], prev_road[i]
